@@ -229,16 +229,4 @@ Follow the on-screen prompts on the **Initiator** to initiate and manage the com
 **DHushCP** is intended for educational and authorized security testing purposes only. Unauthorized interception or manipulation of network traffic is illegal and unethical. Users are responsible for ensuring that their use of this tool complies with all applicable laws and regulations. The developers of **DHushCP** do not endorse or support any malicious or unauthorized activities. Use this tool responsibly and at your own risk.
 
 ## 📜 License
-**DHushCP** is licensed under the [GNU GENERAL PUBLIC LICENSE Version 3](https://github.com/0SINTr/DHushCP/blob/main/LICENSE).
-
-## 📧 Professional Collaborations
-
-- **Email Address**:  
-  Please direct your inquiries to **sintr.0@pm.me**.
-
-- **Important Guidelines**:  
-  - Use a **professional email** or a **ProtonMail** address.
-  - Keep your message **concise** and written in **English**.
-
-- **Security Notice**:  
-  Emails with **links** or **attachments** will be ignored for security reasons.
+**DHushCP** is licensed under the [GNU GENERAL PUBLIC LICENSE Version 3](https://github.com/pdudotdev/DHushCP/blob/main/LICENSE).

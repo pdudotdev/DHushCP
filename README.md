@@ -2,8 +2,8 @@
 # 🛡️ DHushCP: Covert Communication via DHCP 🛡️
 
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
-[![Stable Release](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/0SINTr/DHushCP/releases/tag/v0.2.0)
-[![Last Commit](https://img.shields.io/github/last-commit/0SINTr/DHushCP)](https://github.com/0SINTr/DHushCP/commits/main/)
+[![Stable Release](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/pdudotdev/DHushCP/releases/tag/v0.2.0)
+[![Last Commit](https://img.shields.io/github/last-commit/pdudotdev/DHushCP)](https://github.com/pdudotdev/DHushCP/commits/main/)
 
 ## 📖 Table of Contents
 
@@ -190,7 +190,7 @@ Alice and Bob need to exchange a crucial message without using any messaging app
 
 1. **Clone the Repository:** Use the commands below in your Linux terminal.
    ```bash
-   git clone https://github.com/0SINTr/DHushCP.git
+   git clone https://github.com/pdudotdev/DHushCP.git
    cd DHushCP
    ```
 

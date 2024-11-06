@@ -13,7 +13,7 @@
   - [🔄 Communication Flow](#-communication-flow)
   - [🕵️ Example Use Case](#%EF%B8%8F-example-use-case-for-dhushcp)
   - [🧮 Available Message Space](#-available-message-space-calculation)
-  - [🔐 Encryption and Hashing Algorithms](#)
+  - [🔐 Encryption and Hashing Algorithms](#-encryption-and-hashing-algorithms)
   - [🖥️ System Requirements](#%EF%B8%8F-system-requirements)
   - [🛠️ Installation and Setup](#%EF%B8%8F-installation-and-setup)
   - [🎯 Planned Upgrades](#-planned-upgrades)

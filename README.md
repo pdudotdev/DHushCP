@@ -13,6 +13,7 @@
   - [🔄 Communication Flow](#-communication-flow)
   - [🕵️ Example Use Case](#%EF%B8%8F-example-use-case-for-dhushcp)
   - [🧮 Available Message Space](#-available-message-space-calculation)
+  - [🔐 Encryption and Hashing Algorithms](#)
   - [🖥️ System Requirements](#%EF%B8%8F-system-requirements)
   - [🛠️ Installation and Setup](#%EF%B8%8F-installation-and-setup)
   - [🎯 Planned Upgrades](#-planned-upgrades)
@@ -173,6 +174,154 @@ Alice and Bob need to exchange a crucial message without using any messaging app
 - **Available Message Space:** 255 bytes - 60 bytes = **195 bytes**
 
 **NOTE!** The current limit for messages is **100 characters**.
+
+## 🔐 **Encryption and Hashing Algorithms**
+
+### Reasons for Choosing the Encryption and Hashing Algorithms
+
+DHushCP utilizes a combination of advanced cryptographic algorithms to ensure secure and covert communication over local networks. The chosen algorithms are selected based on their security strength, efficiency, and suitability for embedding within DHCP packets.
+
+#### 1. Elliptic Curve Cryptography (ECC)
+
+- **Efficiency**: ECC offers equivalent security to traditional algorithms like RSA but with smaller key sizes. This results in faster computations and reduced overhead, which is essential when embedding data within the limited space of DHCP packets.
+- **Security**: The `SECP384R1` elliptic curve used in DHushCP provides robust security against modern cryptographic attacks.
+- **Key Exchange**: ECC enables secure key exchange through the Elliptic Curve Diffie-Hellman (ECDH) algorithm, allowing both parties to establish a shared secret without transmitting the secret itself over the network.
+
+#### 2. Advanced Encryption Standard (AES) in Galois/Counter Mode (GCM)
+
+- **Confidentiality and Integrity**: AES-GCM provides both encryption (confidentiality) and authentication (integrity) in a single, efficient step. It ensures that the message remains confidential and detects any tampering.
+- **Performance**: AES is widely adopted and optimized in hardware and software, offering excellent performance for encrypting data.
+- **Security**: GCM mode is resistant to various cryptographic attacks and, when used correctly with a unique nonce, provides strong security guarantees.
+
+#### 3. HMAC-based Extract-and-Expand Key Derivation Function (HKDF)
+
+- **Key Derivation**: HKDF is used to derive a strong symmetric encryption key from the shared secret established via ECDH. It ensures the derived key is suitable for encryption purposes.
+- **Standardization**: HKDF is a standardized method for key derivation in cryptographic protocols, providing interoperability and security.
+
+#### 4. Secure Hash Algorithm 256 (SHA-256)
+
+- **Integrity Verification**: SHA-256 generates a cryptographic hash of the message, which is used to verify that the message has not been altered during transmission.
+- **Collision Resistance**: It is computationally infeasible to find two different messages that produce the same hash, ensuring the uniqueness and integrity of the message.
+
+### How Each Encryption/Hashing Operation Secures Communication
+
+#### 1. Key Exchange and Shared Secret Derivation
+
+- **ECC Key Pair Generation**: Both the Initiator and Responder generate their own ECC key pairs (private and public keys) using the `SECP384R1` curve.
+
+  ```python
+  private_key = ec.generate_private_key(ec.SECP384R1())
+  public_key = private_key.public_key()
+  ```
+
+- **Public Key Exchange**: The parties exchange their public keys embedded within DHCP Discover packets using custom DHCP options.
+
+- **Shared Secret Derivation**: Each party uses their private key and the other's public key to compute a shared secret via the ECDH algorithm.
+
+  ```python
+  shared_secret = private_key.exchange(ec.ECDH(), peer_public_key)
+  ```
+
+- **AES Key Derivation with HKDF**: The shared secret is passed through HKDF to derive a symmetric AES-256 key for encrypting and decrypting messages.
+
+  ```python
+  derived_key = HKDF(
+      algorithm=hashes.SHA256(),
+      length=32,
+      salt=None,
+      info=b'DHushCP-SharedKey',
+  ).derive(shared_secret)
+  ```
+
+#### 2. Message Encryption Process
+
+- **Plaintext Preparation**: The sender prepares the plaintext message to be sent.
+
+- **Checksum Calculation with SHA-256**: A SHA-256 checksum (hash) of the plaintext is computed and appended to the message. This checksum will be used by the recipient to verify the integrity of the message.
+
+  ```python
+  digest = hashes.Hash(hashes.SHA256())
+  digest.update(plaintext.encode())
+  checksum = digest.finalize()
+  ```
+
+- **Nonce Generation**: A unique 12-byte nonce is generated for use with AES-GCM encryption. The nonce ensures that each encryption operation is unique, which is critical for the security of GCM mode.
+
+  ```python
+  nonce = os.urandom(12)
+  ```
+
+- **AES-GCM Encryption**: The plaintext message is encrypted using AES-256 in GCM mode with the derived symmetric key and the generated nonce.
+
+  ```python
+  aesgcm = AESGCM(aes_key)
+  ciphertext = aesgcm.encrypt(nonce, plaintext.encode(), None)
+  ```
+
+- **Encrypted Package Creation**: The nonce, ciphertext, and checksum are combined into a single package ready for transmission.
+
+  ```python
+  encrypted_package = nonce + ciphertext + checksum
+  ```
+
+#### 3. Message Transmission
+
+- **Embedding in DHCP Packets**: The encrypted package is embedded into DHCP Discover packets using a custom DHCP option (option 226). This allows the message to be transmitted over the network covertly, blending in with regular DHCP traffic.
+
+  ```python
+  options = [(DATA_OPTION, encrypted_package)]
+  packet = create_dhcp_discover(session_id, dhushcp_id, options)
+  send_dhcp_discover(packet, iface)
+  ```
+
+#### 4. Message Decryption Process
+
+- **Packet Reception**: The recipient detects the DHCP Discover packet containing the encrypted message.
+
+- **Extraction of Encrypted Package**: The encrypted package is extracted from the DHCP options.
+
+- **Nonce and Ciphertext Separation**: The nonce and ciphertext are separated from the received package.
+
+  ```python
+  nonce = encrypted_package[:12]
+  ciphertext = encrypted_package[12:-32]
+  received_checksum = encrypted_package[-32:]
+  ```
+
+- **AES-GCM Decryption**: Using the shared symmetric key and the nonce, the recipient decrypts the ciphertext to retrieve the plaintext message.
+
+  ```python
+  plaintext_bytes = aesgcm.decrypt(nonce, ciphertext, None)
+  plaintext = plaintext_bytes.decode()
+  ```
+
+- **Checksum Verification**: The recipient computes the SHA-256 checksum of the decrypted plaintext and compares it to the received checksum to verify that the message has not been altered.
+
+  ```python
+  digest = hashes.Hash(hashes.SHA256())
+  digest.update(plaintext.encode())
+  calculated_checksum = digest.finalize()
+
+  if calculated_checksum != received_checksum:
+      print("Checksum verification failed!")
+      return None
+  ```
+
+- **Plaintext Retrieval**: If the checksum matches, the recipient accepts the message as authentic and unaltered.
+
+#### 5. Security Benefits
+
+- **Confidentiality**: AES-256 encryption ensures that only parties with the correct symmetric key can decrypt the messages, keeping the content confidential.
+
+- **Integrity**: The use of AES-GCM's authentication and an additional SHA-256 checksum ensures that any tampering with the message during transmission is detectable.
+
+- **Authentication**: Since the shared key is derived from the ECDH key exchange using private keys, only the intended parties can compute the shared secret, authenticating each other.
+
+- **Replay Protection**: The use of unique nonces for each message prevents replay attacks, as the same nonce cannot be reused without detection.
+
+- **Stealth**: Embedding encrypted messages within DHCP Discover packets makes the communication less noticeable to network monitoring systems, as it appears as regular network traffic.
+
+By combining these encryption and hashing algorithms, DHushCP provides a secure communication channel that is both confidential and resilient against common network attacks, all while maintaining a low profile within standard network operations.
 
 ## 🖥️ System Requirements
 

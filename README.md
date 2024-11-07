@@ -373,6 +373,15 @@ Follow the on-screen prompts on the **Initiator** to initiate and manage the com
 - [ ] DER encoding vs. PEM now
 - [ ] More testing is needed
 
+### Transparency
+For efficiency, the implementation of my funky Network Stego ideas is done using:
+- **Python**, **Scapy**, **nmap**, **cryptography** libraries, etc.
+- **Home-lab** with dedicated Linux machines and adapters.
+- **GPT-4o & o1-preview** (let **it** do the heavy lifting!).
+- Careful, refined, hardcore **prompt engineering**.
+- Manual optimization and verification of AI-generated code.
+- Countless iterations, what-ifs, adjustments, and tests.
+
 ## ⚠️ Disclaimer
 **DHushCP** is intended for educational and authorized security testing purposes only. Unauthorized interception or manipulation of network traffic is illegal and unethical. Users are responsible for ensuring that their use of this tool complies with all applicable laws and regulations. The developers of **DHushCP** do not endorse or support any malicious or unauthorized activities. Use this tool responsibly and at your own risk.
 
